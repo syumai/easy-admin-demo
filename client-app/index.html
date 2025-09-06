@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顧客アプリ - Easy Admin組み込み画面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 1.5rem;
+            background-color: #fafafa;
+            color: #333;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .app-header h1 {
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-header p {
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #374151;
+            font-size: 1.25rem;
+        }
+
+        .loading {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc2626;
+            background-color: #fef2f2;
+            padding: 0.75rem;
+            border-radius: 4px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+        }
+
+        .user-details h3 {
+            margin: 0 0 0.25rem 0;
+            color: #111827;
+        }
+
+        .user-details p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .users-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .users-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .users-list li:last-child {
+            border-bottom: none;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .user-email {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .user-role {
+            background-color: #f3f4f6;
+            color: #374151;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .user-role.admin {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+
+        .button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .demo-section {
+            border-top: 2px solid #e5e7eb;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .demo-section h3 {
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1>顧客アプリ</h1>
+        <p>Easy Admin SDK を使用したサンプルアプリケーション</p>
+    </div>
+
+    <!-- ログイン中ユーザー表示 -->
+    <div class="card">
+        <h2>ログイン中ユーザー情報</h2>
+        <div id="current-user-content">
+            <div class="loading">読み込み中...</div>
+        </div>
+        <div class="actions">
+            <button class="button" onclick="loadCurrentUser()">再読み込み</button>
+        </div>
+    </div>
+
+    <!-- ユーザー一覧表示 -->
+    <div class="card">
+        <h2>ユーザー一覧</h2>
+        <div id="users-list-content">
+            <div class="loading">読み込み中...</div>
+        </div>
+        <div class="actions">
+            <button class="button" onclick="loadUsersList()">再読み込み</button>
+        </div>
+    </div>
+
+    <!-- API呼び出しデモ -->
+    <div class="card">
+        <h2>API呼び出しデモ</h2>
+        <div class="demo-section">
+            <h3>新しいユーザーを作成</h3>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <input type="text" id="new-user-name" placeholder="名前" style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                <input type="email" id="new-user-email" placeholder="メールアドレス" style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                <button class="button" onclick="createUser()">作成</button>
+            </div>
+            <div id="create-user-result"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3>エラーハンドリングのテスト</h3>
+            <button class="button" onclick="testError()">存在しないAPI呼び出し</button>
+            <div id="error-test-result"></div>
+        </div>
+    </div>
+
+    <!-- SDKを読み込み -->
+    <script src="../sdk/easy-admin-sdk.js"></script>
+    
+    <!-- アプリケーションスクリプト -->
+    <script>
+        // ページ読み込み時に初期データを取得
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('顧客アプリ: ページ読み込み完了');
+            loadCurrentUser();
+            loadUsersList();
+        });
+
+        // ログイン中ユーザー情報の読み込み
+        async function loadCurrentUser() {
+            const content = document.getElementById('current-user-content');
+            content.innerHTML = '<div class="loading">読み込み中...</div>';
+            
+            try {
+                console.log('顧客アプリ: getCurrentUser() を呼び出し');
+                const user = await easyAdminClient.getCurrentUser();
+                console.log('顧客アプリ: getCurrentUser() の結果', user);
+                
+                content.innerHTML = `
+                    <div class="user-info">
+                        <img class="user-avatar" src="${user.avatar}" alt="${user.name}" onerror="this.style.display='none'">
+                        <div class="user-details">
+                            <h3>${user.name}</h3>
+                            <p>${user.email}</p>
+                            <p>役割: <span class="user-role ${user.role}">${user.role}</span></p>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('顧客アプリ: getCurrentUser() でエラー', error);
+                content.innerHTML = `<div class="error">エラー: ${error.message}</div>`;
+            }
+        }
+
+        // ユーザー一覧の読み込み
+        async function loadUsersList() {
+            const content = document.getElementById('users-list-content');
+            content.innerHTML = '<div class="loading">読み込み中...</div>';
+            
+            try {
+                console.log('顧客アプリ: listUsers() を呼び出し');
+                const users = await easyAdminClient.listUsers();
+                console.log('顧客アプリ: listUsers() の結果', users);
+                
+                if (users.length === 0) {
+                    content.innerHTML = '<p>ユーザーが見つかりませんでした。</p>';
+                    return;
+                }
+                
+                const usersList = users.map(user => `
+                    <li>
+                        <div>
+                            <div class="user-name">${user.name}</div>
+                            <div class="user-email">${user.email}</div>
+                        </div>
+                        <span class="user-role ${user.role}">${user.role}</span>
+                    </li>
+                `).join('');
+                
+                content.innerHTML = `<ul class="users-list">${usersList}</ul>`;
+            } catch (error) {
+                console.error('顧客アプリ: listUsers() でエラー', error);
+                content.innerHTML = `<div class="error">エラー: ${error.message}</div>`;
+            }
+        }
+
+        // 新しいユーザーを作成
+        async function createUser() {
+            const nameInput = document.getElementById('new-user-name');
+            const emailInput = document.getElementById('new-user-email');
+            const resultDiv = document.getElementById('create-user-result');
+            
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            
+            if (!name || !email) {
+                resultDiv.innerHTML = '<div class="error">名前とメールアドレスを入力してください。</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="loading">作成中...</div>';
+            
+            try {
+                console.log('顧客アプリ: createUser() を呼び出し', { name, email, role: 'user' });
+                const newUser = await easyAdminClient.createUser({ name, email, role: 'user' });
+                console.log('顧客アプリ: createUser() の結果', newUser);
+                
+                resultDiv.innerHTML = `
+                    <div style="background-color: #f0f9ff; color: #1e40af; padding: 0.75rem; border-radius: 4px; border-left: 4px solid #2563eb;">
+                        ユーザーが作成されました: ${newUser.name} (ID: ${newUser.id})
+                    </div>
+                `;
+                
+                // 入力フィールドをクリア
+                nameInput.value = '';
+                emailInput.value = '';
+                
+                // ユーザー一覧を再読み込み
+                setTimeout(loadUsersList, 1000);
+            } catch (error) {
+                console.error('顧客アプリ: createUser() でエラー', error);
+                resultDiv.innerHTML = `<div class="error">エラー: ${error.message}</div>`;
+            }
+        }
+
+        // エラーハンドリングのテスト
+        async function testError() {
+            const resultDiv = document.getElementById('error-test-result');
+            resultDiv.innerHTML = '<div class="loading">API呼び出し中...</div>';
+            
+            try {
+                console.log('顧客アプリ: 存在しないAPI nonExistentMethod() を呼び出し');
+                await easyAdminClient.nonExistentMethod();
+            } catch (error) {
+                console.log('顧客アプリ: 予期されたエラーをキャッチ', error);
+                resultDiv.innerHTML = `
+                    <div style="background-color: #fff7ed; color: #c2410c; padding: 0.75rem; border-radius: 4px; border-left: 4px solid #ea580c; margin-top: 0.5rem;">
+                        期待されたエラー: ${error.message}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
